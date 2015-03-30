@@ -59,13 +59,18 @@
 	Flint.prototype.render = function(ctx) {
 		var missingVars = [];
 		for (var i = 0; i < this.requiredVars.length; i++) {
-			if (!ctx.hasOwnProperty(this.requiredVars[i])) {
-				missingVars.push(this.requiredVars[i]);
+			var varProgression = this.requiredVars[i].split(".");
+			var root = ctx;
+			for (var j = 0; j < varProgression.length; j++) {
+				if (!root.hasOwnProperty(varProgression[j])) {
+					missingVars.push(varProgression.slice(0, j).join(","));
+				}
+				root = root[varProgression[j]];
 			}
 		}
 		if (missingVars.length > 0) {
 			if (missingVars.length === 1) {
-				throw new RenderError("Context missing variable: " + missingVars[1], this, ctx);
+				throw new RenderError("Context missing variable: " + missingVars[0], this, ctx);
 			} else {
 				throw new RenderError("Context missing variables: " + missingVars.join(", "), this, ctx);
 			}
@@ -319,6 +324,7 @@
 		default:
 			this.type = TemplateTypes.VARIABLE;
 			this.name = parts[0];
+			this.resolver = parts[0].split(".");
 			if (parts.length > 1) {
 				throw "Extra paramters after variable in template declaration. '" + decl + "'";
 			}
@@ -330,7 +336,11 @@
 		render: function(str, ctx) {
 			switch (this.type) {
 			case TemplateTypes.VARIABLE:
-				return str.replace(this.decl, ctx[this.name]);
+				var branch = ctx;
+				for (var i = 0, l = this.resolver.length; i < l; i++) {
+					branch = branch[this.resolver[i]];
+				}
+				return str.replace(this.decl, branch);
 			case TemplateTypes.TEMPLATE:
 				var subCtx = cloneObject(ctx);
 				for (var i = 0; i < this.ctxHooks.length; i++) {
