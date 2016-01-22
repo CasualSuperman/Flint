@@ -131,14 +131,14 @@
 	function all(arr, func) {
 		var yes = true;
 		for (var i = 0, l = arr.length; yes && i < l; i++) {
-			yes = yes && func(arr[i]);
+			yes = func(arr[i]);
 		}
 		return yes;
 	}
 	function any(arr, func) {
 		var yes = false;
 		for (var i = 0, l = arr.length; !yes && i < l; i++) {
-			yes = yes || func(arr[i]);
+			yes = func(arr[i]);
 		}
 		return yes;
 	}
