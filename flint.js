@@ -34,12 +34,38 @@
 		this.templTargets = [];
 		this.requiredTempls = {};
 
-
-		this.markup = copyNodesAsObjects((function() {
-			var rootTemplElem = document.createElement("template");
-			rootTemplElem.innerHTML = templ;
-			return rootTemplElem.content;
-		})());
+		if (typeof templ === 'string' || templ instanceof String) {
+			this.markup = copyNodesAsObjects((function() {
+				var rootTemplElem = document.createElement("template");
+				rootTemplElem.innerHTML = templ;
+				if (rootTemplElem.content) {
+					return rootTemplElem.content;
+				} else {
+					var frag = document.createDocumentFragment();
+					for (var i = 0; i < rootTemplElem.childNodes.length; i++) {
+						frag.appendChild(rootTemplElem.childNodes[i].cloneNode(true));
+					}
+					return frag;
+				}
+			})());
+		} else if (templ instanceof DocumentFragment) {
+			this.markup = copyNodesAsObjects(templ);
+		} else if (templ instanceof Element && templ.content) {
+			this.markup = copyNodesAsObjects(templ.content);
+		} else if (templ instanceof Element) {
+			this.markup = copyNodesAsObjects((function() {
+				var rootTemplElem = document.createElement("template");
+				if (rootTemplElem.content) {
+					return rootTemplElem.content;
+				} else {
+					var frag = document.createDocumentFragment();
+					for (var i = 0; i < templ.childNodes.length; i++) {
+						frag.appendChild(templ.childNodes[i].cloneNode(true));
+					}
+					return frag;
+				}
+			})());
+		}
 		traverseChildren(this, this.markup);
 		this.markup = new PseudoDoc(this.markup, false);
 
