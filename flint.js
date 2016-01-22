@@ -128,6 +128,20 @@
 			func(arr[i]);
 		}
 	}
+	function all(arr, func) {
+		var yes = true;
+		for (var i = 0, l = arr.length; yes && i < l; i++) {
+			yes = yes && func(arr[i]);
+		}
+		return yes;
+	}
+	function any(arr, func) {
+		var yes = false;
+		for (var i = 0, l = arr.length; !yes && i < l; i++) {
+			yes = yes || func(arr[i]);
+		}
+		return yes;
+	}
 
 	function newNodeBasedOnType(node, create) {
 		switch(node.nodeType) {
@@ -151,12 +165,13 @@
 			return new PseudoAttr(attr, create);	
 		});
 
+		this.fullyRendered = false;
+
 		if (src instanceof PseudoNode && src.static) {
 			this.static = src.static.cloneNode(false);
 		} else {
-			var requiresRendering = false;
-			each(this.attributes, function(attr) {
-				requiresRendering = requiresRendering || attr.watchers.length > 0;
+			var requiresRendering = any(this.attributes, function(attr) {
+				return attr.watchers.length > 0;
 			});
 			if (!requiresRendering && !create) {
 				var node = this.static = document.createElement(this.localName);
@@ -168,6 +183,23 @@
 		this.childNodes = src.childNodes.length === 0 ? (create ? emptyArr : []) : map(src.childNodes, function(child) {
 			return newNodeBasedOnType(child, create);
 		});
+
+		if (this.childNodes.length == 0) {
+			this.fullyRendered = true;
+		} else {
+			var allStatic = all(this.childNodes, function(child) {
+				return child.fullyRendered;
+			});
+			if (allStatic) {
+				this.fullyRendered = true;
+				var parent = this.static;
+				each(this.childNodes, function(child) {
+					parent.appendChild(child.static);
+				});
+				this.childNodes = null;
+				this.attributes = null;
+			}
+		}
 
 		return this;
 	}
@@ -182,6 +214,17 @@
 
 	/** @constructor */
 	function PseudoText(src, create) {
+		if (src.static) {
+			return src;
+		}
+		if (src instanceof Element) {
+			var templDecls = getTemplDecls(src.nodeValue);
+			if (templDecls.length === 0) {
+				this.static = document.createTextNode(src.nodeValue);
+				this.fullyRendered = true;
+				return;
+			}
+		}
 		this.watchers = src.watchers ? src.watchers : create ? [] : emptyArr;
 		this.nodeValue = src.nodeValue;
 		this.nodeType = src.nodeType;
@@ -195,10 +238,23 @@
 		this.childNodes = src.childNodes.length === 0 ? emptyArr : map(src.childNodes, function(child) {
 			return newNodeBasedOnType(child, create);
 		});
+		var allStatic = all(this.childNodes, function(child) {
+			return child.fullyRendered;
+		});
+		if (allStatic) {
+			var doc = this.static = document.createDocumentFragment();
+			each(this.childNodes, function(child) {
+				doc.appendChild(child.static);
+			});
+			this.fullyStatic = true;
+		}
 		return this;
 	}
 
 	PseudoDoc.prototype.render = function(ctx) {
+		if (this.static) {
+			return this.static.cloneNode(true);
+		}
 		var doc = document.createDocumentFragment();
 		each(this.childNodes, function(child) {
 			doc.appendChild(child.render(ctx));
@@ -224,7 +280,10 @@
 	
 	PseudoNode.prototype.render = function(ctx) {
 		var node;
-		if (this.static) {
+		if (this.fullyRendered) {
+			node = this.static.cloneNode(true);
+			return node;
+		} else if (this.static) {
 			node = this.static.cloneNode(false);
 		} else {
 			node = document.createElement(this.localName);
@@ -432,6 +491,11 @@
 	function checkContent(templ, elem) {
 		var text = elem.nodeValue;
 		var templDecls = getTemplDecls(text);
+		if (templDecls.length === 0) {
+			elem.static = document.createTextNode(text);
+			elem.fullyRendered = true;
+			return;
+		}
 		for (var i = 0; i < templDecls.length; i++) {
 			/*elem.watchers.push(new Watcher(templDecls[i], function(elem, ctx) {
 				elem.nodeValue = templ.render(elem.nodeValue, ctx);
