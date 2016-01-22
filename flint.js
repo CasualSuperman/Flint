@@ -118,13 +118,13 @@
 
 	function map(arr, func) {
 		var collect = [];
-		for (var i = 0; i < arr.length; i++) {
+		for (var i = 0, l = arr.length; i < l; i++) {
 			collect.push(func(arr[i]));
 		}
 		return collect;
 	}
 	function each(arr, func) {
-		for (var i = 0; i < arr.length; i++) {
+		for (var i = 0, l = arr.length; i < l; i++) {
 			func(arr[i]);
 		}
 	}
