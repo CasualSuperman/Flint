@@ -8,6 +8,7 @@ Investigate
 Add special `{{.}}` syntax for passing raw string as context.
 
 Add array syntax. Draft:
-    {{@artists:artist}}
+
+	{{@artists:artist}}
 		<span>{{artist}}</span>
 	{{/@artists}}
