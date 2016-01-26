@@ -20,7 +20,8 @@
 	var TemplateTypes = {
 		VARIABLE: 0,
 		TEMPLATE: 1,
-		CONDITION: 2
+		CONDITION: 2,
+		IDENTITY: 3
 	};
 
 	/**
@@ -85,13 +86,15 @@
 	Flint.prototype.render = function(ctx) {
 		var missingVars = [];
 		for (var i = 0; i < this.requiredVars.length; i++) {
-			var varProgression = this.requiredVars[i].split(".");
-			var root = ctx;
-			for (var j = 0; j < varProgression.length; j++) {
-				if (!root.hasOwnProperty(varProgression[j])) {
-					missingVars.push(varProgression.slice(0, j).join(","));
+			if (this.requiredVars[i] !== ".") {
+				var varProgression = this.requiredVars[i].split(".");
+				var root = ctx;
+				for (var j = 0; j < varProgression.length; j++) {
+					if (!root.hasOwnProperty(varProgression[j])) {
+						missingVars.push(varProgression.slice(0, j).join(","));
+					}
+					root = root[varProgression[j]];
 				}
-				root = root[varProgression[j]];
 			}
 		}
 		if (missingVars.length > 0) {
@@ -367,6 +370,12 @@
 	function TemplDecl(decl) {
 		this.decl = decl;
 		var str = decl.replace(/^{{(.*)}}$/, "$1");
+		if (str === ".") {
+			this.type = TemplateTypes.IDENTITY;
+			this.name = ".";
+			this.resolver = null;
+			return;
+		}
 		var parts = [];
 		var currPart = "";
 		var i = 0;
@@ -420,6 +429,8 @@
 	TemplDecl.prototype = {
 		render: function(str, ctx) {
 			switch (this.type) {
+			case TemplateTypes.IDENTITY:
+				return ctx;
 			case TemplateTypes.VARIABLE:
 				var branch = ctx;
 				for (var i = 0, l = this.resolver.length; i < l; i++) {
