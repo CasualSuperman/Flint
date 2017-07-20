@@ -90,7 +90,7 @@
 				var varProgression = this.requiredVars[i].split(".");
 				var root = ctx;
 				for (var j = 0; j < varProgression.length; j++) {
-					if (!varProgression[j] in root) {
+					if (!(varProgression[j] in root)) {
 						missingVars.push(varProgression.slice(0, j + 1).join(","));
 					}
 					root = root[varProgression[j]];
