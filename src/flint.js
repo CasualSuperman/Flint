@@ -27,7 +27,7 @@
 	/**
 	 *  @constructor
 	 *  @struct
-	 *  @param {string} templ
+	 *  @param templ
 	 */
 	function Flint(templ) {
 		this.requiredVars = [];
@@ -317,7 +317,7 @@
 	function Watcher(templ, func) {
 		this.templ = templ;
 		this.func = func;
-	};
+	}
 
 	Watcher.prototype = {
 		render: function(node, ctx) {
@@ -346,8 +346,8 @@
 		for (var i = 0; i < obj.attributes.length; i++) {
 			node.setAttribute(obj.attributes[i].name, obj.attributes[i].value);
 		}
-		for (var i = 0; i < obj.childNodes.length; i++) {
-			node.appendChild(_objToHtml(obj.childNodes[i]));
+		for (var j = 0; j < obj.childNodes.length; j++) {
+			node.appendChild(_objToHtml(obj.childNodes[j]));
 		}
 		return node;
 	}
@@ -359,7 +359,6 @@
 		node.watchers.push(new Watcher(templ, func));
 	}
 
-	var emptyChildNodes = [];
 	function copyNodesAsObjects(node) {
 		return new PseudoDoc(node, true);
 	}
@@ -439,8 +438,8 @@
 				return str.replace(this.decl, branch);
 			case TemplateTypes.TEMPLATE:
 				var subCtx = cloneObject(ctx);
-				for (var i = 0; i < this.ctxHooks.length; i++) {
-					subCtx = this.ctxHooks[i](subCtx);
+				for (var j = 0; j < this.ctxHooks.length; j++) {
+					subCtx = this.ctxHooks[j](subCtx);
 				}
 				return str.replace(this.decl, templates[this.name].render(subCtx));
 			}
@@ -473,8 +472,8 @@
 		}
 		var nodeIndex = templ.templTargets.indexOf(obj);
 		if (nodeIndex !== -1) {
-			for (var i = 0; i < templ.templs[nodeIndex].length; i++) {
-				templ.templs[nodeIndex][i](ret, ctx);
+			for (var j = 0; j < templ.templs[nodeIndex].length; j++) {
+				templ.templs[nodeIndex][j](ret, ctx);
 			}
 		}
 		return ret;
@@ -545,12 +544,12 @@
 		}
 
 		templDecls = getTemplDecls(attr.value);
-		for (var i = 0; i < templDecls.length; i++) {
-			addUpdater(templ, templDecls[i].name, attr, (function(templ) {
+		for (var j = 0; j < templDecls.length; j++) {
+			addUpdater(templ, templDecls[j].name, attr, (function(templ) {
 				return function(attr, val) {
 					attr.value = templ.render(attr.value, val);
 				}
-			}(templDecls[i])));
+			}(templDecls[j])));
 		}
 	}
 	
