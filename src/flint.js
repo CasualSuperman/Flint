@@ -35,7 +35,7 @@
 		this.templTargets = [];
 		this.requiredTempls = {};
 
-		if (typeof templ === 'string' || templ instanceof String) {
+		if (typeof templ === "string" || templ instanceof String) {
 			this.markup = copyNodesAsObjects((function() {
 				var rootTemplElem = document.createElement("template");
 				rootTemplElem.innerHTML = templ;
@@ -165,7 +165,7 @@
 		this.nodeType = src.nodeType;
 		this.localName = src.localName;
 		this.attributes = map(src.attributes, function(attr) {
-			return new PseudoAttr(attr, create);	
+			return new PseudoAttr(attr, create);
 		});
 
 		this.fullyRendered = false;
@@ -280,7 +280,7 @@
 		});
 		return ret;
 	};
-	
+
 	PseudoNode.prototype.render = function(ctx) {
 		var node;
 		if (this.fullyRendered) {
@@ -329,28 +329,6 @@
 			}
 		}
 	};
-
-	function objToHtml(obj) {
-		var frag = document.createDocumentFragment();
-		for (var i = 0; i < obj.childNodes.length; i++) {
-			frag.appendChild(_objToHtml(obj.childNodes[i]));
-		}
-		return frag;
-	}
-
-	function _objToHtml(obj) {
-		if (obj.nodeType === ElementTypes.TEXT_NODE) {
-			return document.createTextNode(obj.nodeValue);
-		}
-		var node = document.createElement(obj.nodeName);
-		for (var i = 0; i < obj.attributes.length; i++) {
-			node.setAttribute(obj.attributes[i].name, obj.attributes[i].value);
-		}
-		for (var j = 0; j < obj.childNodes.length; j++) {
-			node.appendChild(_objToHtml(obj.childNodes[j]));
-		}
-		return node;
-	}
 
 	function addUpdater(templ, name, node, func) {
 		if (templ.requiredVars.indexOf(name) === -1) {
@@ -450,35 +428,6 @@
 		return obj;
 	}
 
-	function cloneAndRender(templ, obj, ctx) {
-		var ret;
-		if (typeof obj !== "object" || obj instanceof Array) {
-			if (obj instanceof Array) {
-				var newArr = [];
-				for (var i = 0; i < obj.length; i++) {
-					newArr.push(cloneAndRender(templ, obj[i], ctx));
-				}
-				ret = newArr;
-			} else {
-				ret = obj;
-			}
-		} else {
-			ret = {};
-			for (var attr in obj) {
-				if (obj.hasOwnProperty(attr)) {
-					ret[attr] = cloneAndRender(templ, obj[attr], ctx);
-				}
-			}
-		}
-		var nodeIndex = templ.templTargets.indexOf(obj);
-		if (nodeIndex !== -1) {
-			for (var j = 0; j < templ.templs[nodeIndex].length; j++) {
-				templ.templs[nodeIndex][j](ret, ctx);
-			}
-		}
-		return ret;
-	}
-
 	function traverseChildren(templ, elem) {
 		if (elem.nodeType === ElementTypes.TEXT_NODE) {
 			checkContent(templ, elem);
@@ -539,7 +488,7 @@
 			addUpdater(templ, templDecls[i].name, attr, (function(templ) {
 				return function(attr, val) {
 					attr.name = templ.render(attr.name, val);
-				}
+				};
 			}(templDecls[i])));
 		}
 
@@ -548,18 +497,18 @@
 			addUpdater(templ, templDecls[j].name, attr, (function(templ) {
 				return function(attr, val) {
 					attr.value = templ.render(attr.value, val);
-				}
+				};
 			}(templDecls[j])));
 		}
 	}
-	
+
 	function updateAttr(templ, attr) {
 		var templDecls = getTemplDecls(attr.value);
 		for (var i = 0; i < templDecls.length; i++) {
 			addUpdater(templ, templDecls[i].name, attr, (function(templ) {
 				return function(attr, ctx) {
 					attr.value = templ.render(attr.value, ctx);
-				}
+				};
 			}(templDecls[i])));
 		}
 	}
