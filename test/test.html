@@ -9,68 +9,68 @@
 		<table id="rowInsert"></table>
 		<table id="staticRender"></table>
 		<script>
-		var helloTempl = "{{hello}}, world!<br />";
-		var cont = document.getElementById("target");
-		console.profile("Template Render");
-		var templ = Flint.create(helloTempl);
-		cont.appendChild(templ.render({hello: "Hello"}))
-		cont.appendChild(templ.render({hello: "Greetings"}))
-		cont.appendChild(templ.render({hello: "Goodbye"}))
-		cont.appendChild(Flint.once(helloTempl, {hello: "Salutations"}));
-		console.profileEnd();
-		var complicatedTempl =
-		"<table>" +
+		window.addEventListener("load", function() {
+			var helloTempl = "{{hello}}, world!<br />";
+			var cont = document.getElementById("target");
+			console.profile("Template Render");
+			var templ = Flint.create(helloTempl);
+			cont.appendChild(templ.render({hello: "Hello"}))
+			cont.appendChild(templ.render({hello: "Greetings"}))
+			cont.appendChild(templ.render({hello: "Goodbye"}))
+			cont.appendChild(Flint.once(helloTempl, {hello: "Salutations"}));
+			console.profileEnd();
+			var complicatedTempl =
+			"<table>" +
+				"<tr>" +
+					"<td {{mean}}{{test}}='{{var}}{{otherVar}}'>" +
+						"{{greeting}}, {{subject}}!" +
+					"</td>" +
+				"</tr>" +
+			"</table>";
+			console.profile("Complicated");
+			var compTempl = Flint.create(complicatedTempl);
+			cont.appendChild(compTempl.render({greeting: "Silence", subject: "earthling", mean: "data-", test: "renderer", "var": "flint", otherVar:""}));
+			cont.appendChild(compTempl.render({greeting: "Awesome", subject: "dude", mean: "data-", test: "awesome", "var": "dom", otherVar:"-manipulation"}));
+			console.profileEnd();
+			var rowTempl = 
+			"<tr>" + 
+				"<td>{{greeting}}</td>" +
+				"<td>{{subject}}</td>" + 
+			"</tr>";
+			var table = document.getElementById("rowInsert");
+			function c(g, s) {
+				return {greeting: g, subject: s};
+			}
+			var rowCtx = [c("Hello", "world!"), c("Goodbye", "cruel world")];
+			console.profile("Row inserts");
+			var rowTempl = Flint.create(rowTempl);
+			for (var i = 0; i < 10000; i++) {
+				table.appendChild(rowTempl.render(rowCtx[Math.floor((Math.random() * 2))]));
+			}
+			console.profileEnd();
+			var staticTempl =
 			"<tr>" +
-				"<td {{mean}}{{test}}='{{var}}{{otherVar}}'>" +
-					"{{greeting}}, {{subject}}!" +
+				"<td>" +
+					"Hello, world!" +
 				"</td>" +
-			"</tr>" +
-		"</table>";
-		console.profile("Complicated");
-		var compTempl = Flint.create(complicatedTempl);
-		cont.appendChild(compTempl.render({greeting: "Silence", subject: "earthling", mean: "data-", test: "renderer", "var": "flint", otherVar:""}));
-		cont.appendChild(compTempl.render({greeting: "Awesome", subject: "dude", mean: "data-", test: "awesome", "var": "dom", otherVar:"-manipulation"}));
-		console.profileEnd();
-		var rowTempl = 
-		"<tr>" + 
-			"<td>{{greeting}}</td>" +
-			"<td>{{subject}}</td>" + 
-		"</tr>";
-		var table = document.getElementById("rowInsert");
-		function c(g, s) {
-			return {greeting: g, subject: s};
-		}
-		var rowCtx = [c("Hello", "world!"), c("Goodbye", "cruel world")];
-		console.profile("Row inserts");
-		var rowTempl = Flint.create(rowTempl);
-		for (var i = 0; i < 10000; i++) {
-			table.appendChild(rowTempl.render(rowCtx[Math.floor((Math.random() * 2))]));
-		}
-		console.profileEnd();
-		var staticTempl =
-		"<tr>" +
-			"<td>" +
-				"Hello, world!" +
-			"</td>" +
-		"</tr>";
-		var table = document.getElementById("staticRender");
-		var tempArr = [];
-		console.profile("Static Render");
-		var staticTempl = Flint.create(staticTempl);
-		for (var i = 0; i < 10000; i++) {
-			tempArr.push(staticTempl.render({}));
-		}
-		console.profileEnd();
-		var stringTempl = "<span>{{.}}</span>";
-		var body = document.getElementsByTagName("body")[0];
-		console.profile("String context");
-		var stringTempl = Flint.create(stringTempl);
-		for (var i = 0; i < 10000; i++) {
-			body.appendChild(stringTempl.render("Hello world"));
-		}
-		</script>
-		<script>
-		console.profileEnd();
+			"</tr>";
+			var table = document.getElementById("staticRender");
+			var tempArr = [];
+			console.profile("Static Render");
+			var staticTempl = Flint.create(staticTempl);
+			for (var i = 0; i < 10000; i++) {
+				tempArr.push(staticTempl.render({}));
+			}
+			console.profileEnd();
+			var stringTempl = "<span>{{.}}</span>";
+			var body = document.getElementsByTagName("body")[0];
+			console.profile("String context");
+			var stringTempl = Flint.create(stringTempl);
+			for (var i = 0; i < 10000; i++) {
+				body.appendChild(stringTempl.render("Hello world"));
+			}
+			console.profileEnd();
+		});
 		</script>
 	</body>
 </html>
