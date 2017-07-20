@@ -91,7 +91,7 @@
 				var root = ctx;
 				for (var j = 0; j < varProgression.length; j++) {
 					if (!root.hasOwnProperty(varProgression[j])) {
-						missingVars.push(varProgression.slice(0, j).join(","));
+						missingVars.push(varProgression.slice(0, j + 1).join(","));
 					}
 					root = root[varProgression[j]];
 				}
