@@ -54,10 +54,19 @@
 			"</td>" +
 		"</tr>";
 		var table = document.getElementById("staticRender");
+		var tempArr = [];
 		console.profile("Static Render");
 		var staticTempl = Flint.create(staticTempl);
 		for (var i = 0; i < 10000; i++) {
-			table.appendChild(staticTempl.render({}));
+			tempArr.push(staticTempl.render({}));
+		}
+		console.profileEnd();
+		var stringTempl = "<span>{{.}}</span>";
+		var body = document.getElementsByTagName("body")[0];
+		console.profile("String context");
+		var stringTempl = Flint.create(stringTempl);
+		for (var i = 0; i < 10000; i++) {
+			body.appendChild(stringTempl.render("Hello world"));
 		}
 		</script>
 		<script>
